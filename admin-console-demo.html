@@ -1,0 +1,2421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Utility B2C Admin Console (Demo)</title>
+  <style>
+    :root{
+      /* LIGHT THEME (Readable) */
+      --bg0:#f6f8ff;
+      --bg1:#eef3ff;
+
+      --card:rgba(255,255,255,.82);
+      --card2:rgba(255,255,255,.92);
+
+      --stroke:rgba(15,23,42,.10);
+      --stroke2:rgba(15,23,42,.16);
+
+      --text:#0f172a;
+      --muted:rgba(15,23,42,.70);
+      --muted2:rgba(15,23,42,.52);
+
+      --good:#16a34a;
+      --warn:#d97706;
+      --bad:#e11d48;
+      --info:#2563eb;
+
+      --accent:#6d28d9;
+      --accent2:#0891b2;
+
+      --shadow: 0 18px 60px rgba(15,23,42,.10);
+      --blur: blur(10px);
+
+      --radius: 18px;
+      --radius2: 14px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 800px at 15% 0%, rgba(109,40,217,.12), transparent 60%),
+        radial-gradient(1000px 700px at 90% 12%, rgba(8,145,178,.10), transparent 55%),
+        radial-gradient(900px 700px at 50% 110%, rgba(22,163,74,.08), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow:hidden;
+    }
+
+    /* Subtle background grid */
+    .bg-grid{
+      position:fixed; inset:0;
+      background-image:
+        linear-gradient(rgba(15,23,42,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15,23,42,.04) 1px, transparent 1px);
+      background-size: 44px 44px;
+      opacity:.28;
+      pointer-events:none;
+      mask-image: radial-gradient(900px 600px at 35% 30%, #000 30%, transparent 70%);
+    }
+
+    /* Layout */
+    .app{
+      height:100%;
+      display:grid;
+      grid-template-columns: 280px 1fr;
+      gap:16px;
+      padding:16px;
+    }
+
+    /* Sidebar */
+    .sidebar{
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.62));
+      backdrop-filter: var(--blur);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-width: 260px;
+    }
+
+    .brand{
+      padding:16px 16px 12px 16px;
+      border-bottom:1px solid var(--stroke);
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:42px; height:42px;
+      border-radius: 14px;
+      box-shadow: 0 12px 34px rgba(109,40,217,.18);
+      border:1px solid rgba(15,23,42,.10);
+    }
+    .brand h1{
+      font-size:14px; margin:0;
+      line-height:1.1;
+      letter-spacing:.2px;
+    }
+    .brand p{
+      margin:4px 0 0 0;
+      font-size:12px;
+      color: var(--muted2);
+    }
+
+    .side-search{
+      padding:12px 14px;
+      border-bottom:1px solid var(--stroke);
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .chip{
+      font-size:11px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.55);
+      color: var(--muted);
+      white-space:nowrap;
+    }
+    .side-search input{
+      flex:1;
+      outline:none;
+      padding:10px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.75);
+      border:1px solid var(--stroke);
+      color: var(--text);
+      font-size:13px;
+    }
+    .side-search input::placeholder{ color: rgba(15,23,42,.45); }
+
+    .nav{
+      padding:10px;
+      overflow:auto;
+      scrollbar-gutter: stable;
+    }
+    .nav-section{
+      margin:10px 0 6px;
+      padding:10px 10px 6px;
+      color: rgba(15,23,42,.52);
+      font-size:11px;
+      text-transform: uppercase;
+      letter-spacing:.14em;
+    }
+    .nav button{
+      width:100%;
+      border:none;
+      background:transparent;
+      color: var(--text);
+      text-align:left;
+      padding:11px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      transition: transform .08s ease, background .15s ease, border .15s ease;
+      border:1px solid transparent;
+    }
+    .nav button:hover{
+      background: rgba(15,23,42,.04);
+      border-color: rgba(15,23,42,.08);
+    }
+    .nav button:active{ transform: scale(.99); }
+    .nav button.active{
+      background: linear-gradient(135deg, rgba(109,40,217,.14), rgba(8,145,178,.10));
+      border-color: rgba(15,23,42,.12);
+    }
+    .ico{
+      width:30px; height:30px;
+      display:grid; place-items:center;
+      border-radius: 12px;
+      background: rgba(255,255,255,.72);
+      border:1px solid rgba(15,23,42,.10);
+      box-shadow: 0 10px 26px rgba(15,23,42,.08);
+      flex: 0 0 auto;
+      font-size:14px;
+    }
+    .nav .label{
+      display:flex; flex-direction:column; gap:2px;
+    }
+    .nav .label strong{
+      font-weight:650; font-size:13px;
+      letter-spacing:.2px;
+    }
+    .nav .label span{
+      font-size:11px; color: var(--muted2);
+    }
+
+    .side-footer{
+      margin-top:auto;
+      border-top:1px solid var(--stroke);
+      padding:12px 14px;
+      display:flex; gap:10px; align-items:center;
+      background: rgba(255,255,255,.60);
+    }
+    .avatar{
+      width:34px; height:34px; border-radius: 12px;
+      border:1px solid rgba(15,23,42,.10);
+    }
+    .side-footer .who{
+      display:flex; flex-direction:column; gap:2px;
+      min-width:0;
+    }
+    .side-footer .who b{ font-size:12px; }
+    .side-footer .who small{ color: var(--muted2); font-size:11px; }
+    .side-footer .pill{
+      margin-left:auto;
+      font-size:11px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(15,23,42,.12);
+      background: rgba(255,255,255,.75);
+      color: rgba(15,23,42,.72);
+    }
+
+    /* Main */
+    .main{
+      border-radius: var(--radius);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-width: 0;
+    }
+
+    .topbar{
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.62));
+      backdrop-filter: var(--blur);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:12px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .topbar .title{
+      display:flex; flex-direction:column;
+      gap:4px;
+      min-width:0;
+    }
+    .topbar h2{
+      margin:0;
+      font-size:16px;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .topbar p{
+      margin:0;
+      font-size:12px;
+      color: var(--muted2);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .grow{ flex:1; }
+    .actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .btn{
+      border:1px solid rgba(15,23,42,.14);
+      background: rgba(255,255,255,.70);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      transition: background .15s ease, transform .08s ease, border .15s ease;
+      user-select:none;
+    }
+    .btn:hover{ background: rgba(255,255,255,.92); border-color: rgba(15,23,42,.18); }
+    .btn:active{ transform: scale(.99); }
+    .btn.primary{
+      border-color: rgba(109,40,217,.28);
+      background: linear-gradient(135deg, rgba(109,40,217,.16), rgba(8,145,178,.10));
+    }
+    .btn.danger{
+      border-color: rgba(225,29,72,.22);
+      background: linear-gradient(135deg, rgba(225,29,72,.12), rgba(217,119,6,.06));
+    }
+    .kpi-dot{
+      width:10px; height:10px; border-radius: 999px;
+      background: var(--good);
+      box-shadow: 0 0 0 4px rgba(22,163,74,.14);
+    }
+    .sep{
+      width:1px; height:26px;
+      background: rgba(15,23,42,.12);
+      margin:0 2px;
+    }
+
+    /* Content area */
+    .content{
+      margin-top:14px;
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.60));
+      backdrop-filter: var(--blur);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:14px;
+      overflow:auto;
+      min-height:0;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:12px;
+    }
+    .card{
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.76);
+      border-radius: var(--radius);
+      box-shadow: 0 14px 40px rgba(15,23,42,.10);
+      overflow:hidden;
+      position:relative;
+    }
+    .card::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(600px 240px at 20% 0%, rgba(109,40,217,.10), transparent 65%),
+                  radial-gradient(500px 240px at 80% 20%, rgba(8,145,178,.08), transparent 60%);
+      pointer-events:none;
+      opacity:.9;
+    }
+    .card > *{ position:relative; }
+
+    .card-h{
+      padding:12px 12px 8px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .card-h h3{
+      margin:0;
+      font-size:13px;
+      letter-spacing:.15px;
+    }
+    .card-h small{
+      color: var(--muted2);
+      font-size:11px;
+    }
+    .card-b{ padding: 0 12px 12px; }
+
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:12px;
+    }
+    .kpi{
+      padding:12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.70);
+      border:1px solid rgba(15,23,42,.10);
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .kpi .num{
+      font-size:18px;
+      font-weight:750;
+      letter-spacing:.2px;
+      margin-top:-2px;
+    }
+    .kpi .sub{
+      font-size:11px;
+      color: var(--muted2);
+      margin-top:2px;
+    }
+    .badge{
+      font-size:11px;
+      padding:6px 9px;
+      border-radius: 999px;
+      border:1px solid rgba(15,23,42,.14);
+      background: rgba(255,255,255,.70);
+      color: rgba(15,23,42,.82);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+    }
+    .b-good{ border-color: rgba(22,163,74,.22); background: rgba(22,163,74,.08); }
+    .b-warn{ border-color: rgba(217,119,6,.22); background: rgba(217,119,6,.10); }
+    .b-bad{ border-color: rgba(225,29,72,.22); background: rgba(225,29,72,.08); }
+    .b-info{ border-color: rgba(37,99,235,.22); background: rgba(37,99,235,.08); }
+
+    /* Tables */
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      padding: 10px 12px;
+      border-top:1px solid rgba(15,23,42,.10);
+      border-bottom:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.62);
+    }
+    .tools-left, .tools-right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .field{
+      display:flex; gap:8px; align-items:center;
+      padding:8px 10px;
+      border-radius: 14px;
+      border:1px solid rgba(15,23,42,.12);
+      background: rgba(255,255,255,.76);
+    }
+    .field label{
+      font-size:11px;
+      color: rgba(15,23,42,.62);
+      white-space:nowrap;
+    }
+    .field input, .field select{
+      border:none;
+      outline:none;
+      background: transparent;
+      color: var(--text);
+      font-size:12px;
+      min-width: 140px;
+    }
+    .field input::placeholder{ color: rgba(15,23,42,.45); }
+    .mini{
+      font-size:11px;
+      color: rgba(15,23,42,.56);
+    }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      font-size:12px;
+      overflow:hidden;
+    }
+    thead th{
+      position:sticky; top:0;
+      z-index:2;
+      text-align:left;
+      font-size:11px;
+      color: rgba(15,23,42,.70);
+      background: rgba(255,255,255,.92);
+      border-bottom:1px solid rgba(15,23,42,.10);
+      padding:10px 10px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    tbody td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(15,23,42,.07);
+      vertical-align:top;
+      color: rgba(15,23,42,.92);
+    }
+    tbody tr:hover td{ background: rgba(15,23,42,.03); }
+    .mono{ font-family: var(--mono); font-size:11.5px; }
+    .muted{ color: rgba(15,23,42,.58); }
+    .right{ text-align:right; }
+    .nowrap{ white-space:nowrap; }
+    .row-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .link{
+      color: rgba(37,99,235,.95);
+      text-decoration:none;
+      cursor:pointer;
+    }
+    .link:hover{ text-decoration:underline; }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(15,23,42,.14);
+      background: rgba(255,255,255,.75);
+      font-size:11px;
+      white-space:nowrap;
+      color: rgba(15,23,42,.88);
+    }
+    .dot{ width:8px; height:8px; border-radius:999px; }
+    .s-success{ border-color: rgba(22,163,74,.22); background: rgba(22,163,74,.08); }
+    .s-success .dot{ background: var(--good); box-shadow: 0 0 0 4px rgba(22,163,74,.12); }
+
+    .s-failed{ border-color: rgba(225,29,72,.22); background: rgba(225,29,72,.08); }
+    .s-failed .dot{ background: var(--bad); box-shadow: 0 0 0 4px rgba(225,29,72,.12); }
+
+    .s-pending{ border-color: rgba(217,119,6,.22); background: rgba(217,119,6,.10); }
+    .s-pending .dot{ background: var(--warn); box-shadow: 0 0 0 4px rgba(217,119,6,.12); }
+
+    /* Drawer (details) */
+    .drawer-backdrop{
+      position:fixed; inset:0;
+      background: rgba(15,23,42,.35);
+      backdrop-filter: blur(6px);
+      display:none;
+      align-items:stretch;
+      justify-content:flex-end;
+      z-index:50;
+    }
+    .drawer{
+      width:min(520px, 96vw);
+      height:100%;
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.74));
+      border-left:1px solid rgba(15,23,42,.12);
+      box-shadow: -30px 0 70px rgba(15,23,42,.18);
+      padding:14px;
+      overflow:auto;
+    }
+    .drawer .head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      padding-bottom:10px;
+      border-bottom:1px solid rgba(15,23,42,.10);
+      margin-bottom:12px;
+    }
+    .drawer h4{ margin:0; font-size:14px; }
+    .drawer .sub{ margin:4px 0 0 0; font-size:12px; color: var(--muted2); }
+    .drawer .close{
+      width:42px; height:42px;
+      border-radius: 14px;
+      border:1px solid rgba(15,23,42,.14);
+      background: rgba(255,255,255,.80);
+      color: var(--text);
+      cursor:pointer;
+      display:grid; place-items:center;
+      font-size:16px;
+    }
+    .drawer .block{
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.76);
+      border-radius: var(--radius);
+      padding:12px;
+      margin-bottom:12px;
+    }
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px 12px;
+    }
+    .kv .k{
+      font-size:11px;
+      color: rgba(15,23,42,.58);
+      letter-spacing:.02em;
+      margin-bottom:3px;
+    }
+    .kv .v{
+      font-size:12px;
+      color: rgba(15,23,42,.92);
+    }
+    .timeline{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:6px;
+    }
+    .titem{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .tline{
+      width:10px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    }
+    .tline .bubble{
+      width:10px; height:10px;
+      border-radius:999px;
+      background: rgba(37,99,235,.95);
+      box-shadow: 0 0 0 5px rgba(37,99,235,.12);
+      margin-top:3px;
+    }
+    .tline .stem{
+      width:2px;
+      flex:1;
+      background: rgba(15,23,42,.14);
+      margin-top:6px;
+      border-radius: 999px;
+    }
+    .ttext b{ font-size:12px; }
+    .ttext small{ display:block; color: rgba(15,23,42,.56); margin-top:2px; font-size:11px; }
+
+    /* Simple chart canvas styling */
+    .chart-wrap{
+      padding: 6px 12px 12px;
+    }
+    canvas{
+      width:100%;
+      height:180px;
+      display:block;
+      border-radius: 14px;
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.85);
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      body{ overflow:auto; }
+      .app{ grid-template-columns: 1fr; height:auto; }
+      .sidebar{ position:sticky; top:16px; z-index: 3; }
+      .content{ min-height: 520px; }
+      .kpis{ grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px){
+      .kpis{ grid-template-columns: 1fr; }
+      .field input, .field select{ min-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="logo" src="assets/images/company-logo.png"></img>
+        <div>
+          <h1>Utility B2C Admin</h1>
+          <p>Recharge • BBPS • Travel</p>
+        </div>
+      </div>
+
+      <div class="side-search">
+        <input id="globalSearch" placeholder="Txn ID / Booking ID / Mobile / PNR" />
+      </div>
+
+      <nav class="nav" id="nav">
+        <div class="nav-section">Overview</div>
+        <button class="active" data-route="dashboard">
+          <span class="ico">📊</span>
+          <span class="label"><strong>Dashboard</strong><span>KPIs + Health</span></span>
+        </button>
+
+        <div class="nav-section">Operations</div>
+        <button data-route="utilityTx">
+          <span class="ico">⚡</span>
+          <span class="label"><strong>Utility Transactions</strong><span>Mobile • DTH • BBPS</span></span>
+        </button>
+        <button data-route="travel">
+          <span class="ico">🧳</span>
+          <span class="label"><strong>Travel Bookings</strong><span>Bus • Flight • Train</span></span>
+        </button>
+        <button data-route="refunds">
+          <span class="ico">💸</span>
+          <span class="label"><strong>Refunds & Disputes</strong><span>Aging + Approvals</span></span>
+        </button>
+        <button data-route="users">
+          <span class="ico">👤</span>
+          <span class="label"><strong>Users</strong><span>Profiles + history</span></span>
+        </button>
+        <button data-route="wallet">
+          <span class="ico">👛</span>
+          <span class="label"><strong>Wallet & Ledger</strong><span>Credits / Debits</span></span>
+        </button>
+
+        <div class="nav-section">Config</div>
+        <button data-route="masters">
+          <span class="ico">🗂️</span>
+          <span class="label"><strong>Operator / Biller Master</strong><span>Enable/Disable</span></span>
+        </button>
+        <button data-route="fees">
+          <span class="ico">🧾</span>
+          <span class="label"><strong>Fees & Charges</strong><span>Rules + slabs</span></span>
+        </button>
+        <button data-route="vendors">
+          <span class="ico">🔌</span>
+          <span class="label"><strong>Vendors & Routing</strong><span>Primary/Failover</span></span>
+        </button>
+
+        <div class="nav-section">Security</div>
+        <button data-route="audit">
+          <span class="ico">🛡️</span>
+          <span class="label"><strong>Audit Logs</strong><span>Who did what</span></span>
+        </button>
+        <button data-route="roles">
+          <span class="ico">🔐</span>
+          <span class="label"><strong>Roles & Permissions</strong><span>Maker-checker</span></span>
+        </button>
+        <button data-route="employees">
+          <span class="ico">🧑‍💼</span>
+          <span class="label"><strong>Employees</strong><span>Create staff + manage access</span></span>
+        </button>
+      </nav>
+
+      <div class="side-footer">
+        <img class="avatar" src="assets/images/company-logo.png"></img>
+        <div class="who">
+          <b>Admin Operator</b>
+          <small class="muted">Ops Console • Demo</small>
+        </div>
+        <div class="pill">LIVE</div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="topbar">
+        <div class="kpi-dot" title="System healthy"></div>
+        <div class="title">
+          <h2 id="pageTitle">Dashboard</h2>
+          <p id="pageSubtitle">Today snapshot, success rates, refund aging and vendor health.</p>
+        </div>
+
+        <div class="grow"></div>
+
+        <div class="actions">
+          <button class="btn" id="btnMaintenance">🧰 Maintenance</button>
+          <button class="btn primary" id="btnCreateOffer">✨ Create Offer</button>
+          <span class="sep"></span>
+          <button class="btn danger" id="btnManualRefund">💳 Manual Refund</button>
+        </div>
+      </div>
+
+      <section class="content" id="content">
+        <!-- Rendered by JS -->
+      </section>
+    </main>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true">
+    <div class="drawer" role="dialog" aria-modal="true">
+      <div class="head">
+        <div>
+          <h4 id="drawerTitle">Details</h4>
+          <p class="sub" id="drawerSub">Record information</p>
+        </div>
+        <button class="close" id="drawerClose" title="Close">✕</button>
+      </div>
+      <div id="drawerBody"></div>
+    </div>
+  </div>
+
+<script>
+/* ===========================
+   Dummy Data (Realistic-ish)
+=========================== */
+const DUMMY = (() => {
+  const now = Date.now();
+  const rand = (min,max) => Math.floor(Math.random()*(max-min+1))+min;
+  const pick = (arr) => arr[rand(0, arr.length-1)];
+  const pad = (n) => String(n).padStart(2,"0");
+  const fmtINR = (n) => n.toLocaleString("en-IN", {maximumFractionDigits:0});
+  const dt = (ms) => {
+    const d = new Date(ms);
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const operators = [
+    {code:"AIRP", name:"Airtel Prepaid", service:"Mobile"},
+    {code:"JIOP", name:"Jio Prepaid", service:"Mobile"},
+    {code:"VI  ", name:"VI Prepaid", service:"Mobile"},
+    {code:"ATRD", name:"Airtel Digital TV", service:"DTH"},
+    {code:"TSDT", name:"Tata Play", service:"DTH"},
+    {code:"DSHD", name:"Dish TV", service:"DTH"},
+  ];
+
+  const billers = [
+    {code:"BBPS-ELEC-DEL", name:"Delhi Electricity Board", cat:"Electricity"},
+    {code:"BBPS-GAS-IND", name:"IndGas", cat:"Gas"},
+    {code:"BBPS-WATR-MUM", name:"Mumbai Water Supply", cat:"Water"},
+    {code:"BBPS-BRD-SUB", name:"SuperBroadband", cat:"Broadband"},
+  ];
+
+  const vendors = [
+    {id:"VND-01", name:"VendorOne API", type:"Recharge/BBPS", latency: rand(120,260), err: rand(1,5)},
+    {id:"VND-02", name:"QuickPay Switch", type:"Recharge", latency: rand(140,320), err: rand(2,8)},
+    {id:"VND-03", name:"TravelHub", type:"Travel", latency: rand(180,420), err: rand(1,6)},
+  ];
+
+  const users = Array.from({length: 28}).map((_,i)=>({
+    userId: `U-${10000+i}`,
+    name: pick(["Rahul","Aman","Neha","Pooja","Sahil","Karan","Imran","Ayesha","Vikram","Sneha","Ankit","Priya"]) + " " + pick(["Sharma","Verma","Khan","Singh","Patel","Gupta","Mehta"]),
+    mobile: `9${rand(100000000,999999999)}`,
+    status: pick(["Active","Active","Active","Blocked"]),
+    wallet: rand(0, 6500),
+    spend: rand(1200, 68000),
+    txnCount: rand(3, 78),
+    lastLogin: dt(now - rand(10, 240)*60*60*1000),
+    risk: pick(["None","None","None","Velocity","Chargeback"])
+  }));
+
+  const employees = Array.from({length: 12}).map((_,i)=>({
+    empId: `EMP-${200+i}`,
+    name: pick(["Arjun","Sonia","Vishal","Ritika","Faizan","Deepak","Nidhi","Harsh","Ishita","Rohit"]) + " " + pick(["Sharma","Gupta","Khan","Singh","Patel"]),
+    email: `emp${200+i}@acashpay.in`,
+    mobile: `9${rand(100000000,999999999)}`,
+    role: pick(["SuperAdmin","OpsAdmin","FinanceAdmin","SupportLead"]),
+    status: pick(["Active","Active","Active","Disabled"]),
+    createdAt: dt(now - rand(2, 120)*60*60*1000)
+  }));
+
+  const utilityTx = Array.from({length: 55}).map((_,i)=>{
+    const kind = pick(["Mobile","DTH","BBPS"]);
+    const st = pick(["SUCCESS","SUCCESS","SUCCESS","FAILED","PENDING"]);
+    const amt = kind === "BBPS" ? rand(200, 4800) : rand(99, 999);
+    const op = kind==="BBPS" ? pick(billers) : pick(operators.filter(o=>o.service===kind));
+    const u = pick(users);
+
+    return {
+      id: `TXN-${240000+i}`,
+      vendorRef: `VR-${rand(1000000,9999999)}`,
+      userId: u.userId,
+      userName: u.name,
+      userMobile: u.mobile,
+      service: kind,
+      operator: op.name,
+      operatorCode: op.code,
+      consumer: kind==="BBPS" ? `AC-${rand(100000,999999)}${rand(10,99)}` : (kind==="DTH" ? `SUB-${rand(10000000,99999999)}` : u.mobile),
+      amount: amt,
+      charges: Math.max(2, Math.floor(amt*0.01)),
+      margin: Math.max(1, Math.floor(amt*0.005)),
+      status: st,
+      vendor: pick(vendors.filter(v => v.type !== "Travel")).name,
+      requestedAt: dt(now - rand(1, 96)*60*60*1000),
+      completedAt: st==="PENDING" ? "-" : dt(now - rand(1, 96)*60*60*1000 + rand(20,120)*1000),
+      failReason: st==="FAILED" ? pick(["OPERATOR_DOWN","TIMEOUT","INVALID_INPUT","INSUFFICIENT_BAL","VENDOR_ERR"]) : "-",
+      refund: (st==="FAILED" && pick([true,false,false])) ? pick(["INITIATED","COMPLETED"]) : "NONE"
+    };
+  });
+
+  const travel = Array.from({length: 26}).map((_,i)=>{
+    const kind = pick(["Bus","Flight","Train"]);
+    const st = pick(["CONFIRMED","CONFIRMED","PENDING","FAILED","CANCELLED"]);
+    const u = pick(users);
+    const fare = kind==="Flight" ? rand(2200, 18000) : (kind==="Train" ? rand(180, 4200) : rand(250, 3200));
+    const conv = Math.max(10, Math.floor(fare*0.02));
+    const pnr = kind==="Bus" ? `BUS${rand(100000,999999)}` : `PNR${kind==="Train" ? rand(1000000000,9999999999) : rand(100000,999999)}`;
+    const from = pick(["DEL","BOM","BLR","HYD","CCU","AMD","LKO","JAI"]);
+    const to = pick(["DEL","BOM","BLR","HYD","CCU","AMD","LKO","JAI"].filter(x=>x!==from));
+    const tdate = dt(now + rand(6, 120)*60*60*1000);
+
+    const refund = st==="CANCELLED" ? pick(["INITIATED","PROCESSING","COMPLETED"]) : "NONE";
+    return {
+      id: `BKG-${88000+i}`,
+      userId: u.userId,
+      userName: u.name,
+      userMobile: u.mobile,
+      service: kind,
+      pnr,
+      route: `${from} → ${to}`,
+      travelAt: tdate,
+      pax: rand(1,3),
+      fare,
+      convFee: conv,
+      total: fare+conv,
+      status: st,
+      vendor: "TravelHub",
+      createdAt: dt(now - rand(2, 120)*60*60*1000),
+      cancelRefund: refund,
+      failReason: st==="FAILED" ? pick(["FARE_CHANGED","PAYMENT_FAILED","VENDOR_DOWN","SEAT_UNAVAILABLE"]) : "-"
+    };
+  });
+
+  const refunds = [
+    ...utilityTx.filter(x => x.refund!=="NONE").map((x, idx)=>({
+      refundId: `RFD-U-${5200+idx}`,
+      type: "Utility",
+      refId: x.id,
+      service: x.service,
+      user: x.userMobile,
+      amount: x.amount,
+      reason: x.status==="FAILED" ? "Failed but debited" : "Reversal",
+      status: x.refund,
+      agingHrs: rand(1, 72),
+      approvedBy: x.refund==="COMPLETED" ? "FinanceAdmin" : "-",
+      vendorRef: x.vendorRef
+    })),
+    ...travel.filter(x => x.cancelRefund!=="NONE").map((x, idx)=>({
+      refundId: `RFD-T-${6100+idx}`,
+      type: "Travel",
+      refId: x.id,
+      service: x.service,
+      user: x.userMobile,
+      amount: Math.max(100, Math.floor(x.total * 0.82)),
+      reason: "Booking cancelled",
+      status: x.cancelRefund,
+      agingHrs: rand(2, 96),
+      approvedBy: x.cancelRefund==="COMPLETED" ? "FinanceAdmin" : "-",
+      vendorRef: x.pnr
+    }))
+  ].sort((a,b)=>b.agingHrs-a.agingHrs);
+
+  const ledger = Array.from({length: 60}).map((_,i)=>{
+    const u = pick(users);
+    const t = pick(["LOAD","SPEND","REFUND","BONUS","ADJUST"]);
+    const amt = rand(50, 5000);
+    const sign = (t==="SPEND") ? -1 : 1;
+    const opening = rand(0, 9000);
+    const closing = Math.max(0, opening + sign*amt);
+    return {
+      id:`LDG-${760000+i}`,
+      userId:u.userId,
+      mobile:u.mobile,
+      type:t,
+      amount: sign*amt,
+      opening, closing,
+      ref: pick([pick(utilityTx).id, pick(travel).id, `SYS-${rand(1000,9999)}`]),
+      status: pick(["POSTED","POSTED","PENDING"]),
+      at: dt(now - rand(1, 220)*60*60*1000)
+    }
+  });
+
+  const audit = Array.from({length: 36}).map((_,i)=>({
+    at: dt(now - rand(1, 72)*60*60*1000),
+    actor: pick(["SuperAdmin","OpsAdmin","SupportLead","FinanceAdmin"]),
+    action: pick([
+      "Operator disabled","Operator enabled",
+      "Manual refund initiated","Refund approved",
+      "Fee rule updated","Vendor routing changed",
+      "User blocked","Wallet adjustment created",
+      "Employee created","Employee disabled","Role updated"
+    ]),
+    object: pick(["Employees Module", pick(operators).name, pick(billers).name, pick(utilityTx).id, pick(travel).id, pick(users).userId, pick(employees).empId]),
+    ip: `${rand(10,230)}.${rand(0,255)}.${rand(0,255)}.${rand(0,255)}`
+  }));
+
+  const masters = {
+    operators: operators.map(o=>({ ...o, enabled: pick([true,true,true,false]), vendorMap: pick(["VendorOne API","QuickPay Switch"]), slaMin: rand(1,5) })),
+    billers: billers.map(b=>({ ...b, enabled: pick([true,true,false]), fetchBill: pick([true,true,false]), slaMin: rand(2,8) })),
+  };
+
+  const fees = Array.from({length: 12}).map((_,i)=>({
+    id: `FEE-${300+i}`,
+    service: pick(["Mobile","DTH","BBPS","Bus","Flight","Train"]),
+    scope: pick(["ALL","Operator/Biller Specific"]),
+    slab: `${pick([0,100,200,500])}–${pick([500,1000,2000,5000])}`,
+    feeType: pick(["FLAT","PERCENT"]),
+    value: pick([2,3,5,8,1.5,2.0,2.5]),
+    effective: `2026-01-${String(rand(1,28)).padStart(2,'0')}`,
+    status: pick(["ACTIVE","ACTIVE","EXPIRED"])
+  }));
+
+  const routing = vendors.map(v=>({
+    id:v.id,
+    name:v.name,
+    type:v.type,
+    primary: pick([true,false]),
+    failoverTo: pick(["-", "VendorOne API", "QuickPay Switch"]),
+    latency: v.latency,
+    errorRate: v.err
+  }));
+
+  // Dashboard aggregates
+  const todayTx = rand(860, 1420);
+  const succ = rand(88, 96);
+  const fail = rand(3, 10);
+  const pend = Math.max(1, 100 - succ - fail);
+  const gmv = rand(720000, 1650000);
+  const refundsAmt = refunds.slice(0,8).reduce((s,r)=>s+r.amount,0);
+
+  const series = Array.from({length: 14}).map((_,i)=>({
+    label: `D-${14-i}`,
+    value: rand(42000, 135000)
+  }));
+
+  return {
+    fmtINR, dt,
+    users, employees, utilityTx, travel, refunds, ledger, audit,
+    masters, fees, routing,
+    dashboard: { todayTx, succ, fail, pend, gmv, refundsAmt, series }
+  };
+})();
+
+/* ===========================
+   Small UI helpers
+=========================== */
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+const esc = (s="") => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const money = (n) => `₹${DUMMY.fmtINR(Math.abs(Number(n)||0))}`;
+
+function statusPill(status){
+  const s = String(status).toUpperCase();
+  if(["SUCCESS","CONFIRMED","POSTED","COMPLETED","ACTIVE","ENABLED"].includes(s)) return `<span class="status s-success"><span class="dot"></span>${esc(status)}</span>`;
+  if(["FAILED","REJECTED","BLOCKED","EXPIRED","CANCELLED","DISABLED"].includes(s)) return `<span class="status s-failed"><span class="dot"></span>${esc(status)}</span>`;
+  return `<span class="status s-pending"><span class="dot"></span>${esc(status)}</span>`;
+}
+
+function openDrawer({title, subtitle, bodyHTML}){
+  $("#drawerTitle").textContent = title;
+  $("#drawerSub").textContent = subtitle || "";
+  $("#drawerBody").innerHTML = bodyHTML;
+  const bd = $("#drawerBackdrop");
+  bd.style.display = "flex";
+  bd.setAttribute("aria-hidden","false");
+  document.body.style.overflow = "hidden";
+}
+function closeDrawer(){
+  const bd = $("#drawerBackdrop");
+  bd.style.display = "none";
+  bd.setAttribute("aria-hidden","true");
+  document.body.style.overflow = "";
+}
+$("#drawerClose").addEventListener("click", closeDrawer);
+$("#drawerBackdrop").addEventListener("click", (e)=>{ if(e.target.id === "drawerBackdrop") closeDrawer(); });
+
+function toast(msg){
+  openDrawer({
+    title: "Action (Demo)",
+    subtitle: "This is a visual-only prototype (no backend).",
+    bodyHTML: `
+      <div class="block">
+        <div class="kv">
+          <div><div class="k">Message</div><div class="v">${esc(msg)}</div></div>
+          <div><div class="k">Timestamp</div><div class="v mono">${esc(DUMMY.dt(Date.now()))}</div></div>
+        </div>
+        <div style="margin-top:10px" class="mini muted">
+          Note: In production, this action will call API, create audit entry, and update status in real time.
+        </div>
+      </div>
+    `
+  });
+}
+
+function buildTable({columns, rows, rowKey="id"}){
+  const thead = `
+    <thead><tr>${columns.map(c=>`<th class="${c.right?'right':''}">${esc(c.label)}</th>`).join("")}</tr></thead>
+  `;
+  const tbody = `
+    <tbody>
+      ${rows.map(r => `
+        <tr data-rowid="${esc(r[rowKey] ?? "")}">
+          ${columns.map(c => `<td class="${c.right?'right':''} ${c.nowrap?'nowrap':''}">${typeof c.render==='function' ? c.render(r) : esc(r[c.key])}</td>`).join("")}
+        </tr>
+      `).join("")}
+    </tbody>
+  `;
+  return `<table>${thead}${tbody}</table>`;
+}
+
+/* ===========================
+   Chart (vanilla canvas)
+=========================== */
+function drawLineChart(canvas, points){
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width = Math.max(1, canvas.clientWidth) * devicePixelRatio;
+  const h = canvas.height = Math.max(1, canvas.clientHeight) * devicePixelRatio;
+
+  ctx.clearRect(0,0,w,h);
+
+  // grid
+  ctx.lineWidth = 1 * devicePixelRatio;
+  ctx.strokeStyle = "rgba(15,23,42,.10)";
+  for(let i=1;i<=4;i++){
+    const y = (h/5)*i;
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke();
+  }
+
+  const values = points.map(p=>p.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const pad = (max-min) * 0.12 || 1;
+  const vmin = min - pad;
+  const vmax = max + pad;
+
+  const x0 = 16*devicePixelRatio;
+  const y0 = 18*devicePixelRatio;
+  const x1 = w - 16*devicePixelRatio;
+  const y1 = h - 18*devicePixelRatio;
+
+  const xStep = (x1-x0) / Math.max(1,(points.length-1));
+  const yMap = (v) => y1 - ((v - vmin)/(vmax - vmin))*(y1-y0);
+
+  // line
+  ctx.lineWidth = 2.2 * devicePixelRatio;
+  ctx.strokeStyle = "rgba(37,99,235,.92)";
+  ctx.beginPath();
+  points.forEach((p,i)=>{
+    const x = x0 + xStep*i;
+    const y = yMap(p.value);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // glow
+  ctx.lineWidth = 8 * devicePixelRatio;
+  ctx.strokeStyle = "rgba(37,99,235,.16)";
+  ctx.beginPath();
+  points.forEach((p,i)=>{
+    const x = x0 + xStep*i;
+    const y = yMap(p.value);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // points
+  points.forEach((p,i)=>{
+    const x = x0 + xStep*i;
+    const y = yMap(p.value);
+    ctx.fillStyle = "rgba(15,23,42,.92)";
+    ctx.beginPath(); ctx.arc(x,y, 3.2*devicePixelRatio, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = "rgba(37,99,235,.22)";
+    ctx.beginPath(); ctx.arc(x,y, 8.5*devicePixelRatio, 0, Math.PI*2); ctx.fill();
+  });
+
+  ctx.fillStyle = "rgba(15,23,42,.70)";
+  ctx.font = `${11*devicePixelRatio}px ui-sans-serif, system-ui`;
+  ctx.textBaseline = "top";
+  ctx.fillText("Revenue (14 days) - Demo", 14*devicePixelRatio, 10*devicePixelRatio);
+}
+
+/* ===========================
+   Rendering (Pages)
+=========================== */
+function renderDashboard(root){
+  const d = DUMMY.dashboard;
+  const recentTx = [...DUMMY.utilityTx].slice(0,10);
+  const recentRefunds = [...DUMMY.refunds].slice(0,8);
+
+  root.innerHTML = `
+    <div class="grid">
+      <div class="card" style="grid-column: span 12;">
+        <div class="card-h">
+          <div>
+            <h3>Today Snapshot</h3>
+            <small>KPIs are demo numbers (for UI reference)</small>
+          </div>
+          <span class="badge b-info">🟦 Live Monitor (Demo)</span>
+        </div>
+        <div class="card-b">
+          <div class="kpis">
+            <div class="kpi">
+              <div class="ico">🧾</div>
+              <div>
+                <div class="num">${esc(d.todayTx)}</div>
+                <div class="sub">Total Transactions (Today)</div>
+              </div>
+            </div>
+            <div class="kpi">
+              <div class="ico">✅</div>
+              <div>
+                <div class="num">${esc(d.succ)}%</div>
+                <div class="sub">Success Rate</div>
+              </div>
+              <div style="margin-left:auto" class="badge b-good">Healthy</div>
+            </div>
+            <div class="kpi">
+              <div class="ico">⏳</div>
+              <div>
+                <div class="num">${esc(d.pend)}%</div>
+                <div class="sub">Pending (auto-retry)</div>
+              </div>
+              <div style="margin-left:auto" class="badge b-warn">Watch</div>
+            </div>
+            <div class="kpi">
+              <div class="ico">💰</div>
+              <div>
+                <div class="num">${money(d.gmv)}</div>
+                <div class="sub">Gross Volume (Today)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="revChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: span 8;">
+        <div class="card-h">
+          <div>
+            <h3>Recent Utility Transactions</h3>
+            <small>Click “View” to open the record drawer</small>
+          </div>
+          <span class="badge b-info">⚡ Utility</span>
+        </div>
+
+        <div class="toolbar">
+          <div class="tools-left">
+            <span class="mini muted">Tip: Use left menu or Global Search to navigate quickly.</span>
+          </div>
+          <div class="tools-right">
+            <button class="btn" id="goUtility">Open Utility Tx</button>
+          </div>
+        </div>
+
+        <div class="card-b" style="padding-top:10px;">
+          ${buildTable({
+            rowKey: "id",
+            columns: [
+              {label:"Txn ID", render:r=>`<span class="mono">${esc(r.id)}</span><div class="muted mono">${esc(r.vendorRef)}</div>`},
+              {label:"Service", key:"service"},
+              {label:"Operator/Biller", render:r=>`<b>${esc(r.operator)}</b><div class="muted mono">${esc(r.operatorCode)}</div>`},
+              {label:"Amount", right:true, render:r=>`<b>${money(r.amount)}</b><div class="muted">Fee: ${money(r.charges)}</div>`},
+              {label:"Status", render:r=>statusPill(r.status)},
+              {label:"Actions", render:r=>`
+                <div class="row-actions">
+                  <a class="link" data-action="viewUtility" data-id="${esc(r.id)}">View</a>
+                  <a class="link" data-action="openRefund" data-id="${esc(r.id)}">Refund</a>
+                </div>
+              `}
+            ],
+            rows: recentTx
+          })}
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: span 4;">
+        <div class="card-h">
+          <div>
+            <h3>Refund Aging Queue</h3>
+            <small>Top items by aging (demo)</small>
+          </div>
+          <span class="badge b-warn">💸 Aging</span>
+        </div>
+        <div class="card-b">
+          ${buildTable({
+            rowKey: "refundId",
+            columns: [
+              {label:"Refund ID", render:r=>`<span class="mono">${esc(r.refundId)}</span><div class="muted">${esc(r.type)} • ${esc(r.service)}</div>`},
+              {label:"Aging", right:true, render:r=>`<b>${esc(r.agingHrs)}h</b><div class="muted">${money(r.amount)}</div>`},
+              {label:"Status", render:r=>statusPill(r.status)},
+              {label:"", render:r=>`<a class="link" data-action="viewRefund" data-id="${esc(r.refundId)}">View</a>`}
+            ],
+            rows: recentRefunds
+          })}
+        </div>
+      </div>
+    </div>
+  `;
+
+  const c = $("#revChart");
+  drawLineChart(c, DUMMY.dashboard.series);
+
+  let t=null;
+  window.addEventListener("resize", ()=>{
+    clearTimeout(t);
+    t = setTimeout(()=>{ if($("#revChart")) drawLineChart($("#revChart"), DUMMY.dashboard.series); }, 120);
+  }, { passive:true });
+
+  $("#goUtility").addEventListener("click", ()=>navigate("utilityTx"));
+}
+
+function renderUtilityTransactions(root){
+  const f = state.filters.utility;
+  const vendors = ["ALL", ...Array.from(new Set(DUMMY.utilityTx.map(x=>x.vendor)))];
+
+  const filtered = DUMMY.utilityTx.filter(x=>{
+    const q = (f.q||"").trim().toLowerCase();
+    const hitQ = !q || [x.id, x.vendorRef, x.userId, x.userMobile, x.operator, x.consumer].some(v=>String(v).toLowerCase().includes(q));
+    const hitSvc = (f.service==="ALL") || (x.service===f.service);
+    const hitSt  = (f.status==="ALL")  || (String(x.status).toUpperCase()===String(f.status).toUpperCase());
+    const hitV   = (f.vendor==="ALL")   || (x.vendor===f.vendor);
+    return hitQ && hitSvc && hitSt && hitV;
+  });
+
+  root.innerHTML = `
+    <div class="card" style="grid-column: span 12;">
+      <div class="card-h">
+        <div>
+          <h3>Utility Transactions</h3>
+          <small>Search, filter and drill-down (demo data only)</small>
+        </div>
+        <span class="badge b-info">⚡ Mobile • DTH • BBPS</span>
+      </div>
+
+      <div class="toolbar">
+        <div class="tools-left">
+          <div class="field">
+            <label>Search</label>
+            <input id="u_q" placeholder="Txn / Mobile / Consumer / Vendor Ref" value="${esc(f.q)}" />
+          </div>
+          <div class="field">
+            <label>Service</label>
+            <select id="u_service">
+              ${["ALL","Mobile","DTH","BBPS"].map(s=>`<option ${s===f.service?'selected':''}>${s}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="u_status">
+              ${["ALL","SUCCESS","PENDING","FAILED"].map(s=>`<option ${s===f.status?'selected':''}>${s}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Vendor</label>
+            <select id="u_vendor">
+              ${vendors.map(v=>`<option ${v===f.vendor?'selected':''}>${esc(v)}</option>`).join("")}
+            </select>
+          </div>
+          <span class="mini muted">Showing <b>${filtered.length}</b> records</span>
+        </div>
+
+        <div class="tools-right">
+          <button class="btn" id="u_reset">♻ Reset</button>
+          <button class="btn primary" id="u_export">⬇ Export</button>
+        </div>
+      </div>
+
+      <div class="card-b" style="padding-top:10px;">
+        ${buildTable({
+          rowKey: "id",
+          columns: [
+            {label:"Txn ID", render:r=>`<span class="mono">${esc(r.id)}</span><div class="muted mono">${esc(r.vendorRef)}</div>`},
+            {label:"User", render:r=>`<b>${esc(r.userMobile)}</b><div class="muted mono">${esc(r.userId)}</div>`},
+            {label:"Service", key:"service"},
+            {label:"Operator/Biller", render:r=>`<b>${esc(r.operator)}</b><div class="muted mono">${esc(r.operatorCode)}</div>`},
+            {label:"Amount", right:true, render:r=>`<b>${money(r.amount)}</b><div class="muted">Fee: ${money(r.charges)} • Margin: ${money(r.margin)}</div>`},
+            {label:"Status", render:r=>statusPill(r.status)},
+            {label:"Time", render:r=>`<span class="mono">${esc(r.requestedAt)}</span><div class="muted mono">${esc(r.completedAt)}</div>`},
+            {label:"Actions", render:r=>`
+              <div class="row-actions">
+                <a class="link" data-action="viewUtility" data-id="${esc(r.id)}">View</a>
+                <a class="link" data-action="retryUtility" data-id="${esc(r.id)}">Retry</a>
+                <a class="link" data-action="openRefund" data-id="${esc(r.id)}">Refund</a>
+              </div>
+            `}
+          ],
+          rows: filtered
+        })}
+      </div>
+    </div>
+  `;
+
+  $("#u_q").addEventListener("input",(e)=>{ state.filters.utility.q = e.target.value; render(); });
+  $("#u_service").addEventListener("change",(e)=>{ state.filters.utility.service = e.target.value; render(); });
+  $("#u_status").addEventListener("change",(e)=>{ state.filters.utility.status = e.target.value; render(); });
+  $("#u_vendor").addEventListener("change",(e)=>{ state.filters.utility.vendor = e.target.value; render(); });
+
+  $("#u_reset").addEventListener("click", ()=>{
+    state.filters.utility = { q:"", service:"ALL", status:"ALL", vendor:"ALL" };
+    render();
+  });
+
+  $("#u_export").addEventListener("click", ()=>toast("Export initiated (demo). In production this will generate CSV/XLS and log an audit entry."));
+}
+
+function renderTravel(root){
+  const f = state.filters.travel;
+
+  const filtered = DUMMY.travel.filter(x=>{
+    const q = (f.q||"").trim().toLowerCase();
+    const hitQ = !q || [x.id, x.pnr, x.userMobile, x.userId, x.route].some(v=>String(v).toLowerCase().includes(q));
+    const hitSvc = (f.service==="ALL") || (x.service===f.service);
+    const hitSt  = (f.status==="ALL")  || (String(x.status).toUpperCase()===String(f.status).toUpperCase());
+    return hitQ && hitSvc && hitSt;
+  });
+
+  root.innerHTML = `
+    <div class="card" style="grid-column: span 12;">
+      <div class="card-h">
+        <div>
+          <h3>Travel Bookings</h3>
+          <small>Bus • Flight • Train — booking lifecycle and refunds (demo)</small>
+        </div>
+        <span class="badge b-info">🧳 TravelHub</span>
+      </div>
+
+      <div class="toolbar">
+        <div class="tools-left">
+          <div class="field">
+            <label>Search</label>
+            <input id="t_q" placeholder="Booking / PNR / Mobile / Route" value="${esc(f.q)}" />
+          </div>
+          <div class="field">
+            <label>Service</label>
+            <select id="t_service">
+              ${["ALL","Bus","Flight","Train"].map(s=>`<option ${s===f.service?'selected':''}>${s}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="t_status">
+              ${["ALL","CONFIRMED","PENDING","FAILED","CANCELLED"].map(s=>`<option ${s===f.status?'selected':''}>${s}</option>`).join("")}
+            </select>
+          </div>
+          <span class="mini muted">Showing <b>${filtered.length}</b> records</span>
+        </div>
+
+        <div class="tools-right">
+          <button class="btn" id="t_reset">♻ Reset</button>
+          <button class="btn primary" id="t_export">⬇ Export</button>
+        </div>
+      </div>
+
+      <div class="card-b" style="padding-top:10px;">
+        ${buildTable({
+          rowKey: "id",
+          columns: [
+            {label:"Booking", render:r=>`<span class="mono">${esc(r.id)}</span><div class="muted mono">${esc(r.pnr)}</div>`},
+            {label:"User", render:r=>`<b>${esc(r.userMobile)}</b><div class="muted mono">${esc(r.userId)}</div>`},
+            {label:"Service", key:"service"},
+            {label:"Route", render:r=>`<b>${esc(r.route)}</b><div class="muted mono">PAX: ${esc(r.pax)} • ${esc(r.travelAt)}</div>`},
+            {label:"Total", right:true, render:r=>`<b>${money(r.total)}</b><div class="muted">Fare: ${money(r.fare)} • Fee: ${money(r.convFee)}</div>`},
+            {label:"Status", render:r=>statusPill(r.status)},
+            {label:"Refund", render:r=>r.cancelRefund==="NONE" ? `<span class="muted">—</span>` : statusPill(r.cancelRefund)},
+            {label:"Actions", render:r=>`
+              <div class="row-actions">
+                <a class="link" data-action="viewTravel" data-id="${esc(r.id)}">View</a>
+                <a class="link" data-action="syncPNR" data-id="${esc(r.id)}">Sync PNR</a>
+                <a class="link" data-action="openRefundTravel" data-id="${esc(r.id)}">Refund</a>
+              </div>
+            `}
+          ],
+          rows: filtered
+        })}
+      </div>
+    </div>
+  `;
+
+  $("#t_q").addEventListener("input",(e)=>{ state.filters.travel.q = e.target.value; render(); });
+  $("#t_service").addEventListener("change",(e)=>{ state.filters.travel.service = e.target.value; render(); });
+  $("#t_status").addEventListener("change",(e)=>{ state.filters.travel.status = e.target.value; render(); });
+
+  $("#t_reset").addEventListener("click", ()=>{
+    state.filters.travel = { q:"", service:"ALL", status:"ALL" };
+    render();
+  });
+  $("#t_export").addEventListener("click", ()=>toast("Travel export initiated (demo)."));
+}
+
+function renderRefunds(root){
+  const f = state.filters.refunds;
+  const filtered = DUMMY.refunds.filter(r=>{
+    const q = (f.q||"").trim().toLowerCase();
+    const hitQ = !q || [r.refundId, r.refId, r.vendorRef, r.user, r.service, r.type].some(v=>String(v).toLowerCase().includes(q));
+    const hitType = (f.type==="ALL") || (r.type===f.type);
+    const hitStatus = (f.status==="ALL") || (String(r.status).toUpperCase()===String(f.status).toUpperCase());
+    return hitQ && hitType && hitStatus;
+  });
+
+  root.innerHTML = `
+    <div class="card" style="grid-column: span 12;">
+      <div class="card-h">
+        <div>
+          <h3>Refunds & Disputes</h3>
+          <small>Unified refund queue (approval workflow demo)</small>
+        </div>
+        <span class="badge b-warn">💸 Queue</span>
+      </div>
+
+      <div class="toolbar">
+        <div class="tools-left">
+          <div class="field">
+            <label>Search</label>
+            <input id="r_q" placeholder="Refund / Ref ID / Vendor Ref / Mobile" value="${esc(f.q)}" />
+          </div>
+          <div class="field">
+            <label>Type</label>
+            <select id="r_type">
+              ${["ALL","Utility","Travel"].map(x=>`<option ${x===f.type?'selected':''}>${x}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="r_status">
+              ${["ALL","INITIATED","PROCESSING","COMPLETED"].map(x=>`<option ${x===f.status?'selected':''}>${x}</option>`).join("")}
+            </select>
+          </div>
+          <span class="mini muted">Showing <b>${filtered.length}</b> refunds</span>
+        </div>
+        <div class="tools-right">
+          <button class="btn" id="r_reset">♻ Reset</button>
+          <button class="btn primary" id="r_bulk">✅ Bulk Approve</button>
+        </div>
+      </div>
+
+      <div class="card-b" style="padding-top:10px;">
+        ${buildTable({
+          rowKey:"refundId",
+          columns:[
+            {label:"Refund", render:r=>`<span class="mono">${esc(r.refundId)}</span><div class="muted">${esc(r.type)} • ${esc(r.service)}</div>`},
+            {label:"Ref", render:r=>`<span class="mono">${esc(r.refId)}</span><div class="muted mono">${esc(r.vendorRef)}</div>`},
+            {label:"User", render:r=>`<b>${esc(r.user)}</b>`},
+            {label:"Amount", right:true, render:r=>`<b>${money(r.amount)}</b><div class="muted">${esc(r.agingHrs)}h aging</div>`},
+            {label:"Status", render:r=>statusPill(r.status)},
+            {label:"Approved By", render:r=>r.approvedBy==="-" ? `<span class="muted">—</span>` : `<b>${esc(r.approvedBy)}</b>`},
+            {label:"Actions", render:r=>`
+              <div class="row-actions">
+                <a class="link" data-action="viewRefund" data-id="${esc(r.refundId)}">View</a>
+                <a class="link" data-action="approveRefund" data-id="${esc(r.refundId)}">Approve</a>
+              </div>
+            `}
+          ],
+          rows: filtered
+        })}
+      </div>
+    </div>
+  `;
+
+  $("#r_q").addEventListener("input",(e)=>{ state.filters.refunds.q = e.target.value; render(); });
+  $("#r_type").addEventListener("change",(e)=>{ state.filters.refunds.type = e.target.value; render(); });
+  $("#r_status").addEventListener("change",(e)=>{ state.filters.refunds.status = e.target.value; render(); });
+
+  $("#r_reset").addEventListener("click", ()=>{
+    state.filters.refunds = { q:"", type:"ALL", status:"ALL" };
+    render();
+  });
+
+  $("#r_bulk").addEventListener("click", ()=>toast("Bulk approve (demo). In production: maker-checker, audit, and ledger posting."));
+}
+
+function renderUsers(root){
+  const f = state.filters.users;
+  const filtered = DUMMY.users.filter(u=>{
+    const q = (f.q||"").trim().toLowerCase();
+    const hitQ = !q || [u.userId, u.name, u.mobile].some(v=>String(v).toLowerCase().includes(q));
+    const hitSt = (f.status==="ALL") || (String(u.status).toUpperCase()===String(f.status).toUpperCase());
+    const hitRisk = (f.risk==="ALL") || (u.risk===f.risk);
+    return hitQ && hitSt && hitRisk;
+  });
+
+  root.innerHTML = `
+    <div class="card" style="grid-column: span 12;">
+      <div class="card-h">
+        <div>
+          <h3>Users</h3>
+          <small>Profiles, wallet, risk signals and actions (demo)</small>
+        </div>
+        <span class="badge b-info">👤 Customer</span>
+      </div>
+
+      <div class="toolbar">
+        <div class="tools-left">
+          <div class="field">
+            <label>Search</label>
+            <input id="us_q" placeholder="User ID / Name / Mobile" value="${esc(f.q)}" />
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="us_status">
+              ${["ALL","Active","Blocked"].map(x=>`<option ${x===f.status?'selected':''}>${x}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Risk</label>
+            <select id="us_risk">
+              ${["ALL","None","Velocity","Chargeback"].map(x=>`<option ${x===f.risk?'selected':''}>${x}</option>`).join("")}
+            </select>
+          </div>
+          <span class="mini muted">Showing <b>${filtered.length}</b> users</span>
+        </div>
+
+        <div class="tools-right">
+          <button class="btn primary" id="us_create">➕ Create User</button>
+        </div>
+      </div>
+
+      <div class="card-b" style="padding-top:10px;">
+        ${buildTable({
+          rowKey:"userId",
+          columns:[
+            {label:"User", render:r=>`<b>${esc(r.name)}</b><div class="muted mono">${esc(r.userId)}</div>`},
+            {label:"Mobile", render:r=>`<span class="mono">${esc(r.mobile)}</span>`},
+            {label:"Status", render:r=>statusPill(r.status)},
+            {label:"Wallet", right:true, render:r=>`<b>${money(r.wallet)}</b><div class="muted">Spend: ${money(r.spend)}</div>`},
+            {label:"Txn", right:true, render:r=>`<b>${esc(r.txnCount)}</b><div class="muted">Last: ${esc(r.lastLogin)}</div>`},
+            {label:"Risk", render:r=>r.risk==="None" ? `<span class="muted">None</span>` : `<span class="badge b-warn">⚠ ${esc(r.risk)}</span>`},
+            {label:"Actions", render:r=>`
+              <div class="row-actions">
+                <a class="link" data-action="viewUser" data-id="${esc(r.userId)}">View</a>
+                <a class="link" data-action="walletAdjust" data-id="${esc(r.userId)}">Adjust Wallet</a>
+                <a class="link" data-action="toggleUser" data-id="${esc(r.userId)}">${r.status==="Blocked" ? "Unblock" : "Block"}</a>
+              </div>
+            `}
+          ],
+          rows: filtered
+        })}
+      </div>
+    </div>
+  `;
+
+  $("#us_q").addEventListener("input",(e)=>{ state.filters.users.q = e.target.value; render(); });
+  $("#us_status").addEventListener("change",(e)=>{ state.filters.users.status = e.target.value; render(); });
+  $("#us_risk").addEventListener("change",(e)=>{ state.filters.users.risk = e.target.value; render(); });
+  $("#us_create").addEventListener("click", ()=>toast("Create User clicked (demo)."));
+}
+
+function renderWallet(root){
+  const f = state.filters.wallet;
+  const filtered = DUMMY.ledger.filter(x=>{
+    const q = (f.q||"").trim().toLowerCase();
+    const hitQ = !q || [x.id, x.userId, x.mobile, x.ref, x.type].some(v=>String(v).toLowerCase().includes(q));
+    const hitType = (f.type==="ALL") || (x.type===f.type);
+    const hitStatus = (f.status==="ALL") || (x.status===f.status);
+    return hitQ && hitType && hitStatus;
+  });
+
+  root.innerHTML = `
+    <div class="card" style="grid-column: span 12;">
+      <div class="card-h">
+        <div>
+          <h3>Wallet & Ledger</h3>
+          <small>Credits/debits postings with references (demo)</small>
+        </div>
+        <span class="badge b-info">👛 Ledger</span>
+      </div>
+
+      <div class="toolbar">
+        <div class="tools-left">
+          <div class="field">
+            <label>Search</label>
+            <input id="w_q" placeholder="Ledger / User / Mobile / Ref" value="${esc(f.q)}" />
+          </div>
+          <div class="field">
+            <label>Type</label>
+            <select id="w_type">
+              ${["ALL","LOAD","SPEND","REFUND","BONUS","ADJUST"].map(x=>`<option ${x===f.type?'selected':''}>${x}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="w_status">
+              ${["ALL","POSTED","PENDING"].map(x=>`<option ${x===f.status?'selected':''}>${x}</option>`).join("")}
+            </select>
+          </div>
+          <span class="mini muted">Showing <b>${filtered.length}</b> postings</span>
+        </div>
+
+        <div class="tools-right">
+          <button class="btn danger" id="w_adjust">➖➕ Wallet Adjustment</button>
+        </div>
+      </div>
+
+      <div class="card-b" style="padding-top:10px;">
+        ${buildTable({
+          rowKey:"id",
+          columns:[
+            {label:"Ledger ID", render:r=>`<span class="mono">${esc(r.id)}</span><div class="muted mono">${esc(r.at)}</div>`},
+            {label:"User", render:r=>`<b>${esc(r.mobile)}</b><div class="muted mono">${esc(r.userId)}</div>`},
+            {label:"Type", render:r=>`<b>${esc(r.type)}</b>`},
+            {label:"Amount", right:true, render:r=>{
+              const a = Number(r.amount)||0;
+              const sign = a<0 ? "−" : "+";
+              return `<b>${sign}${money(a)}</b><div class="muted">Open: ${money(r.opening)} • Close: ${money(r.closing)}</div>`;
+            }},
+            {label:"Ref", render:r=>`<span class="mono">${esc(r.ref)}</span>`},
+            {label:"Status", render:r=>statusPill(r.status)},
+            {label:"Actions", render:r=>`<a class="link" data-action="viewLedger" data-id="${esc(r.id)}">View</a>`}
+          ],
+          rows: filtered
+        })}
+      </div>
+    </div>
+  `;
+
+  $("#w_q").addEventListener("input",(e)=>{ state.filters.wallet.q = e.target.value; render(); });
+  $("#w_type").addEventListener("change",(e)=>{ state.filters.wallet.type = e.target.value; render(); });
+  $("#w_status").addEventListener("change",(e)=>{ state.filters.wallet.status = e.target.value; render(); });
+  $("#w_adjust").addEventListener("click", ()=>toast("Wallet adjustment initiated (demo). Maker-checker to be enforced in production."));
+}
+
+function renderMasters(root){
+  const ops = DUMMY.masters.operators;
+  const bil = DUMMY.masters.billers;
+
+  root.innerHTML = `
+    <div class="grid">
+      <div class="card" style="grid-column: span 6;">
+        <div class="card-h">
+          <div>
+            <h3>Operator Master</h3>
+            <small>Enable/disable + vendor mapping</small>
+          </div>
+          <span class="badge b-info">🗂 Operators</span>
+        </div>
+        <div class="card-b">
+          ${buildTable({
+            rowKey:"code",
+            columns:[
+              {label:"Operator", render:r=>`<b>${esc(r.name)}</b><div class="muted mono">${esc(r.code)} • ${esc(r.service)}</div>`},
+              {label:"Vendor Map", render:r=>`<span class="mono">${esc(r.vendorMap)}</span>`},
+              {label:"SLA", right:true, render:r=>`<b>${esc(r.slaMin)} min</b>`},
+              {label:"Status", render:r=>statusPill(r.enabled ? "ACTIVE" : "DISABLED")},
+              {label:"Actions", render:r=>`<a class="link" data-action="toggleMaster" data-kind="operator" data-id="${esc(r.code)}">${r.enabled?"Disable":"Enable"}</a>`}
+            ],
+            rows: ops
+          })}
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: span 6;">
+        <div class="card-h">
+          <div>
+            <h3>Biller Master (BBPS)</h3>
+            <small>Fetch bill capability + SLA</small>
+          </div>
+          <span class="badge b-info">🗂 Billers</span>
+        </div>
+        <div class="card-b">
+          ${buildTable({
+            rowKey:"code",
+            columns:[
+              {label:"Biller", render:r=>`<b>${esc(r.name)}</b><div class="muted mono">${esc(r.code)} • ${esc(r.cat)}</div>`},
+              {label:"Fetch Bill", render:r=>r.fetchBill ? `<span class="badge b-good">Enabled</span>` : `<span class="badge b-bad">Disabled</span>`},
+              {label:"SLA", right:true, render:r=>`<b>${esc(r.slaMin)} min</b>`},
+              {label:"Status", render:r=>statusPill(r.enabled ? "ACTIVE" : "DISABLED")},
+              {label:"Actions", render:r=>`<a class="link" data-action="toggleMaster" data-kind="biller" data-id="${esc(r.code)}">${r.enabled?"Disable":"Enable"}</a>`}
+            ],
+            rows: bil
+          })}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderFees(root){
+  root.innerHTML = `
+    <div class="card" style="grid-column: span 12;">
+      <div class="card-h">
+        <div>
+          <h3>Fees & Charges</h3>
+          <small>Rules/slabs with effective dates (demo)</small>
+        </div>
+        <span class="badge b-info">🧾 Pricing</span>
+      </div>
+
+      <div class="toolbar">
+        <div class="tools-left">
+          <span class="mini muted">
+            Note: In production, fee changes must be maker-checker approved and audited.
+          </span>
+        </div>
+        <div class="tools-right">
+          <button class="btn primary" id="fee_add">➕ Add Rule</button>
+        </div>
+      </div>
+
+      <div class="card-b" style="padding-top:10px;">
+        ${buildTable({
+          rowKey:"id",
+          columns:[
+            {label:"Rule ID", render:r=>`<span class="mono">${esc(r.id)}</span>`},
+            {label:"Service", render:r=>`<b>${esc(r.service)}</b><div class="muted">${esc(r.scope)}</div>`},
+            {label:"Slab", render:r=>`<span class="mono">${esc(r.slab)}</span>`},
+            {label:"Fee", right:true, render:r=>`<b>${esc(r.feeType)} ${esc(r.value)}</b><div class="muted">Effective: ${esc(r.effective)}</div>`},
+            {label:"Status", render:r=>statusPill(r.status)},
+            {label:"Actions", render:r=>`<a class="link" data-action="editFee" data-id="${esc(r.id)}">Edit</a>`}
+          ],
+          rows: DUMMY.fees
+        })}
+      </div>
+    </div>
+  `;
+
+  $("#fee_add").addEventListener("click", ()=>toast("Add fee rule (demo)."));
+}
+
+function renderVendors(root){
+  root.innerHTML = `
+    <div class="card" style="grid-column: span 12;">
+      <div class="card-h">
+        <div>
+          <h3>Vendors & Routing</h3>
+          <small>Primary/failover, latency and error rates (demo)</small>
+        </div>
+        <span class="badge b-info">🔌 Routing</span>
+      </div>
+
+      <div class="card-b">
+        ${buildTable({
+          rowKey:"id",
+          columns:[
+            {label:"Vendor", render:r=>`<b>${esc(r.name)}</b><div class="muted">${esc(r.type)}</div><div class="muted mono">${esc(r.id)}</div>`},
+            {label:"Primary", render:r=>r.primary ? `<span class="badge b-good">Primary</span>` : `<span class="badge">Secondary</span>`},
+            {label:"Failover", render:r=>`<span class="mono">${esc(r.failoverTo)}</span>`},
+            {label:"Latency", right:true, render:r=>`<b>${esc(r.latency)} ms</b>`},
+            {label:"Error Rate", right:true, render:r=>{
+              const er = Number(r.errorRate)||0;
+              const cls = er<=3 ? "b-good" : (er<=6 ? "b-warn" : "b-bad");
+              return `<span class="badge ${cls}">${esc(er)}%</span>`;
+            }},
+            {label:"Actions", render:r=>`
+              <div class="row-actions">
+                <a class="link" data-action="setPrimary" data-id="${esc(r.id)}">Set Primary</a>
+                <a class="link" data-action="viewVendor" data-id="${esc(r.id)}">View</a>
+              </div>
+            `}
+          ],
+          rows: DUMMY.routing
+        })}
+      </div>
+    </div>
+  `;
+}
+
+function renderAudit(root){
+  root.innerHTML = `
+    <div class="card" style="grid-column: span 12;">
+      <div class="card-h">
+        <div>
+          <h3>Audit Logs</h3>
+          <small>Immutable trail of admin activity (demo)</small>
+        </div>
+        <span class="badge b-info">🛡️ Audit</span>
+      </div>
+
+      <div class="card-b">
+        ${buildTable({
+          rowKey:"at",
+          columns:[
+            {label:"Time", render:r=>`<span class="mono">${esc(r.at)}</span>`},
+            {label:"Actor", render:r=>`<b>${esc(r.actor)}</b>`},
+            {label:"Action", render:r=>`<b>${esc(r.action)}</b><div class="muted mono">${esc(r.object)}</div>`},
+            {label:"IP", render:r=>`<span class="mono">${esc(r.ip)}</span>`},
+            {label:"Details", render:r=>`<a class="link" data-action="viewAudit" data-id="${esc(r.at)}">View</a>`}
+          ],
+          rows: DUMMY.audit
+        })}
+      </div>
+    </div>
+  `;
+}
+
+function renderRoles(root){
+  const roles = [
+    { role:"SuperAdmin", desc:"Full access, including configurations, users, and finance overrides.", perms:["All Modules","All Actions","All Approvals"] },
+    { role:"OpsAdmin", desc:"Operations monitoring and remediation; can retry and escalate.", perms:["Dashboard","Utility Tx","Travel","Vendors (view)","Refunds (initiate)"] },
+    { role:"SupportLead", desc:"Customer support, user profiling, ticket-level actions.", perms:["Users","Transaction View","Refund status view"] },
+    { role:"FinanceAdmin", desc:"Approvals and ledger controls with maker-checker.", perms:["Refund Approvals","Wallet Adjustments","Fees Approvals"] },
+  ];
+
+  root.innerHTML = `
+    <div class="grid">
+      <div class="card" style="grid-column: span 7;">
+        <div class="card-h">
+          <div>
+            <h3>Role Matrix (Demo)</h3>
+            <small>Enterprise-grade access control & maker-checker concept</small>
+          </div>
+          <span class="badge b-info">🔐 RBAC</span>
+        </div>
+        <div class="card-b">
+          ${buildTable({
+            rowKey:"role",
+            columns:[
+              {label:"Role", render:r=>`<b>${esc(r.role)}</b><div class="muted">${esc(r.desc)}</div>`},
+              {label:"Key Permissions", render:r=>r.perms.map(p=>`<div class="muted">• ${esc(p)}</div>`).join("")},
+              {label:"Actions", render:r=>`<a class="link" data-action="editRole" data-id="${esc(r.role)}">Edit</a>`}
+            ],
+            rows: roles
+          })}
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: span 5;">
+        <div class="card-h">
+          <div>
+            <h3>Maker–Checker (Recommended)</h3>
+            <small>Controls to prevent misuse and ensure compliance</small>
+          </div>
+          <span class="badge b-warn">✅ Control</span>
+        </div>
+        <div class="card-b">
+          <div class="block">
+            <div class="kv">
+              <div>
+                <div class="k">Maker</div>
+                <div class="v">Creates request (fee change, wallet adjustment, refund override).</div>
+              </div>
+              <div>
+                <div class="k">Checker</div>
+                <div class="v">Approves/rejects after validation.</div>
+              </div>
+              <div>
+                <div class="k">Audit Trail</div>
+                <div class="v">Every action logged with timestamp + actor + IP.</div>
+              </div>
+              <div>
+                <div class="k">SLA & Escalation</div>
+                <div class="v">Pending items are tracked using aging buckets.</div>
+              </div>
+            </div>
+            <div style="margin-top:10px" class="mini muted">
+              This UI is a demo template; integrate these workflows at API + DB level in production.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+const EMP_STORE = { list: [...DUMMY.employees] };
+
+function renderEmployees(root){
+  const f = state.filters.employees;
+  const roles = ["ALL","SuperAdmin","OpsAdmin","FinanceAdmin","SupportLead"];
+  const statuses = ["ALL","Active","Disabled"];
+
+  const filtered = EMP_STORE.list.filter(e=>{
+    const q = (f.q||"").trim().toLowerCase();
+    const hitQ = !q || [e.empId, e.name, e.email, e.mobile].some(v=>String(v).toLowerCase().includes(q));
+    const hitRole = (f.role==="ALL") || (e.role===f.role);
+    const hitSt = (f.status==="ALL") || (String(e.status).toUpperCase()===String(f.status).toUpperCase());
+    return hitQ && hitRole && hitSt;
+  });
+
+  root.innerHTML = `
+    <div class="card" style="grid-column: span 12;">
+      <div class="card-h">
+        <div>
+          <h3>Employees</h3>
+          <small>Create staff accounts, assign roles, enable/disable access (demo)</small>
+        </div>
+        <span class="badge b-info">🧑‍💼 Staff</span>
+      </div>
+
+      <div class="toolbar">
+        <div class="tools-left">
+          <div class="field">
+            <label>Search</label>
+            <input id="e_q" placeholder="EMP ID / Name / Email / Mobile" value="${esc(f.q)}" />
+          </div>
+          <div class="field">
+            <label>Role</label>
+            <select id="e_role">
+              ${roles.map(x=>`<option ${x===f.role?'selected':''}>${x}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select id="e_status">
+              ${statuses.map(x=>`<option ${x===f.status?'selected':''}>${x}</option>`).join("")}
+            </select>
+          </div>
+          <span class="mini muted">Showing <b>${filtered.length}</b> employees</span>
+        </div>
+
+        <div class="tools-right">
+          <button class="btn primary" id="e_create">➕ Create Employee</button>
+        </div>
+      </div>
+
+      <div class="card-b" style="padding-top:10px;">
+        ${buildTable({
+          rowKey:"empId",
+          columns:[
+            {label:"Employee", render:r=>`<b>${esc(r.name)}</b><div class="muted mono">${esc(r.empId)}</div>`},
+            {label:"Contact", render:r=>`<span class="mono">${esc(r.email)}</span><div class="muted mono">${esc(r.mobile)}</div>`},
+            {label:"Role", render:r=>`<span class="badge b-info">🔐 ${esc(r.role)}</span>`},
+            {label:"Status", render:r=>statusPill(r.status)},
+            {label:"Created", render:r=>`<span class="mono">${esc(r.createdAt)}</span>`},
+            {label:"Actions", render:r=>`
+              <div class="row-actions">
+                <a class="link" data-action="viewEmployee" data-id="${esc(r.empId)}">View</a>
+                <a class="link" data-action="toggleEmployee" data-id="${esc(r.empId)}">${r.status==="Disabled"?"Enable":"Disable"}</a>
+              </div>
+            `}
+          ],
+          rows: filtered
+        })}
+      </div>
+    </div>
+  `;
+
+  $("#e_q").addEventListener("input",(e)=>{ state.filters.employees.q = e.target.value; render(); });
+  $("#e_role").addEventListener("change",(e)=>{ state.filters.employees.role = e.target.value; render(); });
+  $("#e_status").addEventListener("change",(e)=>{ state.filters.employees.status = e.target.value; render(); });
+
+  $("#e_create").addEventListener("click", ()=>{
+    openDrawer({
+      title: "Create Employee (Demo)",
+      subtitle: "This will create a staff record in the UI memory only.",
+      bodyHTML: `
+        <div class="block">
+          <div class="kv">
+            <div>
+              <div class="k">Full Name</div>
+              <div class="v"><input id="ce_name" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--stroke);background:rgba(255,255,255,.85);color:var(--text);" placeholder="e.g. Nidhi Sharma"></div>
+            </div>
+            <div>
+              <div class="k">Role</div>
+              <div class="v">
+                <select id="ce_role" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--stroke);background:rgba(255,255,255,.85);color:var(--text);">
+                  ${["SuperAdmin","OpsAdmin","FinanceAdmin","SupportLead"].map(x=>`<option>${x}</option>`).join("")}
+                </select>
+              </div>
+            </div>
+            <div>
+              <div class="k">Email</div>
+              <div class="v"><input id="ce_email" style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--stroke);background:rgba(255,255,255,.85);color:var(--text);" placeholder="name@domain.com"></div>
+            </div>
+            <div>
+              <div class="k">Mobile</div>
+              <div class="v"><input id="ce_mobile" style="width:100%;padding:10px;border-radius:12px;border-radius:12px;border:1px solid var(--stroke);background:rgba(255,255,255,.85);color:var(--text);" placeholder="10-digit mobile"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px" class="row-actions">
+            <button class="btn" id="ce_cancel">Cancel</button>
+            <button class="btn primary" id="ce_save">✅ Create</button>
+          </div>
+        </div>
+      `
+    });
+
+    $("#ce_cancel").addEventListener("click", closeDrawer);
+    $("#ce_save").addEventListener("click", ()=>{
+      const name = ($("#ce_name").value||"").trim();
+      const email = ($("#ce_email").value||"").trim();
+      const mobile = ($("#ce_mobile").value||"").trim();
+      const role = $("#ce_role").value;
+
+      if(!name || !email || !mobile){
+        toast("Please fill Name, Email and Mobile.");
+        return;
+      }
+
+      const nextNo = 200 + EMP_STORE.list.length + 1;
+      EMP_STORE.list.unshift({
+        empId: `EMP-${nextNo}`,
+        name, email, mobile, role,
+        status: "Active",
+        createdAt: DUMMY.dt(Date.now())
+      });
+
+      closeDrawer();
+      render();
+      toast(`Employee created (demo): ${name}`);
+    });
+  });
+}
+
+/* ===========================
+   Routes + State
+=========================== */
+const ROUTES = {
+  dashboard: { title: "Dashboard", subtitle: "Today snapshot, success rates, refund aging and vendor health.", render: renderDashboard },
+  utilityTx: { title: "Utility Transactions", subtitle: "Mobile • DTH • BBPS — drill down by operator/biller, vendor, status and time.", render: renderUtilityTransactions },
+  travel: { title: "Travel Bookings", subtitle: "Bus • Flight • Train — booking lifecycle, PNR sync, cancellation & refunds.", render: renderTravel },
+  refunds: { title: "Refunds & Disputes", subtitle: "Unified queue with aging buckets, approval workflow and vendor references.", render: renderRefunds },
+  users: { title: "Users", subtitle: "Customer profiles, wallet, history, risk flags, and admin actions.", render: renderUsers },
+  wallet: { title: "Wallet & Ledger", subtitle: "Ledger postings, wallet loads/spends/refunds, and adjustments (maker-checker).", render: renderWallet },
+  masters: { title: "Operator / Biller Master", subtitle: "Enable/disable, vendor mapping, bill fetch capability and SLA thresholds.", render: renderMasters },
+  fees: { title: "Fees & Charges", subtitle: "Service-wise fee rules/slabs with effective dates and auditability.", render: renderFees },
+  vendors: { title: "Vendors & Routing", subtitle: "Primary/failover routing, latency, error rates and health indicators.", render: renderVendors },
+  audit: { title: "Audit Logs", subtitle: "Complete traceability: who changed what, when, and from where.", render: renderAudit },
+  roles: { title: "Roles & Permissions", subtitle: "Enterprise access control: Ops, Support, Finance (maker-checker).", render: renderRoles },
+  employees: { title: "Employees", subtitle: "Create employees, assign roles, enable/disable access and track activity.", render: renderEmployees },
+};
+
+let state = {
+  route: "dashboard",
+  filters: {
+    utility: { q:"", service:"ALL", status:"ALL", vendor:"ALL" },
+    travel:  { q:"", service:"ALL", status:"ALL" },
+    refunds: { q:"", type:"ALL", status:"ALL" },
+    users:   { q:"", status:"ALL", risk:"ALL" },
+    wallet:  { q:"", type:"ALL", status:"ALL" },
+    employees:{ q:"", role:"ALL", status:"ALL" }
+  }
+};
+
+function navigate(route){
+  if(!ROUTES[route]) route = "dashboard";
+  state.route = route;
+
+  $$("#nav button").forEach(b=>{
+    b.classList.toggle("active", b.dataset.route === route);
+  });
+
+  $("#pageTitle").textContent = ROUTES[route].title;
+  $("#pageSubtitle").textContent = ROUTES[route].subtitle;
+
+  render();
+}
+
+function render(){
+  const root = $("#content");
+  const r = ROUTES[state.route] || ROUTES.dashboard;
+  r.render(root);
+}
+
+/* ===========================
+   Drawer Detail Views
+=========================== */
+function utilityDetails(tx){
+  const timeline = [
+    { t:"Request received", s: tx.requestedAt },
+    { t:"Vendor routed", s: `${tx.vendor} • ${tx.vendorRef}` },
+    ...(tx.status==="PENDING" ? [{t:"Pending / retry window", s:"Auto-retry enabled"}] : []),
+    ...(tx.status==="FAILED" ? [{t:"Failure reason", s: tx.failReason}] : []),
+    ...(tx.completedAt!=="-" ? [{t:"Completed", s: tx.completedAt}] : []),
+  ];
+
+  openDrawer({
+    title: `Utility Tx • ${tx.id}`,
+    subtitle: `${tx.service} • ${tx.operator} • ${tx.userMobile}`,
+    bodyHTML: `
+      <div class="block">
+        <div class="kv">
+          <div><div class="k">Txn ID</div><div class="v mono">${esc(tx.id)}</div></div>
+          <div><div class="k">Vendor Ref</div><div class="v mono">${esc(tx.vendorRef)}</div></div>
+          <div><div class="k">User</div><div class="v">${esc(tx.userName)}<div class="muted mono">${esc(tx.userId)}</div></div></div>
+          <div><div class="k">Mobile</div><div class="v mono">${esc(tx.userMobile)}</div></div>
+          <div><div class="k">Service</div><div class="v">${esc(tx.service)}</div></div>
+          <div><div class="k">Operator/Biller</div><div class="v">${esc(tx.operator)}<div class="muted mono">${esc(tx.operatorCode)}</div></div></div>
+          <div><div class="k">Consumer</div><div class="v mono">${esc(tx.consumer)}</div></div>
+          <div><div class="k">Amount</div><div class="v"><b>${money(tx.amount)}</b><div class="muted">Charges: ${money(tx.charges)} • Margin: ${money(tx.margin)}</div></div></div>
+          <div><div class="k">Status</div><div class="v">${statusPill(tx.status)}</div></div>
+          <div><div class="k">Vendor</div><div class="v">${esc(tx.vendor)}</div></div>
+          <div><div class="k">Refund</div><div class="v">${tx.refund==="NONE" ? `<span class="muted">—</span>` : statusPill(tx.refund)}</div></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="k" style="margin-bottom:8px;">Processing Timeline</div>
+        <div class="timeline">
+          ${timeline.map((x,i)=>`
+            <div class="titem">
+              <div class="tline">
+                <div class="bubble"></div>
+                ${i<timeline.length-1 ? `<div class="stem"></div>` : ``}
+              </div>
+              <div class="ttext">
+                <b>${esc(x.t)}</b>
+                <small>${esc(x.s)}</small>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="row-actions">
+          <button class="btn" onclick="window.__demoAction('Retry Utility', '${esc(tx.id)}')">🔁 Retry</button>
+          <button class="btn danger" onclick="window.__demoAction('Manual Refund Initiated', '${esc(tx.id)}')">💳 Manual Refund</button>
+          <button class="btn primary" onclick="window.__demoAction('Escalated to Vendor', '${esc(tx.id)}')">📨 Escalate</button>
+        </div>
+      </div>
+    `
+  });
+}
+
+function travelDetails(b){
+  openDrawer({
+    title: `Travel Booking • ${b.id}`,
+    subtitle: `${b.service} • ${b.route} • ${b.userMobile}`,
+    bodyHTML: `
+      <div class="block">
+        <div class="kv">
+          <div><div class="k">Booking ID</div><div class="v mono">${esc(b.id)}</div></div>
+          <div><div class="k">PNR</div><div class="v mono">${esc(b.pnr)}</div></div>
+          <div><div class="k">User</div><div class="v">${esc(b.userName)}<div class="muted mono">${esc(b.userId)}</div></div></div>
+          <div><div class="k">Mobile</div><div class="v mono">${esc(b.userMobile)}</div></div>
+          <div><div class="k">Route</div><div class="v"><b>${esc(b.route)}</b><div class="muted mono">PAX: ${esc(b.pax)} • Travel: ${esc(b.travelAt)}</div></div></div>
+          <div><div class="k">Total</div><div class="v"><b>${money(b.total)}</b><div class="muted">Fare: ${money(b.fare)} • Fee: ${money(b.convFee)}</div></div></div>
+          <div><div class="k">Status</div><div class="v">${statusPill(b.status)}</div></div>
+          <div><div class="k">Refund</div><div class="v">${b.cancelRefund==="NONE" ? `<span class="muted">—</span>` : statusPill(b.cancelRefund)}</div></div>
+          <div><div class="k">Vendor</div><div class="v">${esc(b.vendor)}</div></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="row-actions">
+          <button class="btn" onclick="window.__demoAction('PNR Sync Triggered', '${esc(b.id)}')">🔄 Sync PNR</button>
+          <button class="btn danger" onclick="window.__demoAction('Refund Initiated', '${esc(b.id)}')">💳 Refund</button>
+          <button class="btn primary" onclick="window.__demoAction('Ticket Escalated', '${esc(b.id)}')">📨 Escalate</button>
+        </div>
+      </div>
+    `
+  });
+}
+
+function refundDetails(r){
+  openDrawer({
+    title: `Refund • ${r.refundId}`,
+    subtitle: `${r.type} • ${r.service} • Aging ${r.agingHrs}h`,
+    bodyHTML: `
+      <div class="block">
+        <div class="kv">
+          <div><div class="k">Refund ID</div><div class="v mono">${esc(r.refundId)}</div></div>
+          <div><div class="k">Reference</div><div class="v mono">${esc(r.refId)}</div></div>
+          <div><div class="k">Vendor Ref</div><div class="v mono">${esc(r.vendorRef)}</div></div>
+          <div><div class="k">User</div><div class="v mono">${esc(r.user)}</div></div>
+          <div><div class="k">Reason</div><div class="v">${esc(r.reason)}</div></div>
+          <div><div class="k">Amount</div><div class="v"><b>${money(r.amount)}</b></div></div>
+          <div><div class="k">Status</div><div class="v">${statusPill(r.status)}</div></div>
+          <div><div class="k">Approved By</div><div class="v">${r.approvedBy==="-"?`<span class="muted">—</span>`:esc(r.approvedBy)}</div></div>
+        </div>
+      </div>
+      <div class="block">
+        <div class="row-actions">
+          <button class="btn primary" onclick="window.__demoAction('Refund Approved', '${esc(r.refundId)}')">✅ Approve</button>
+          <button class="btn" onclick="window.__demoAction('Refund Sent to Vendor', '${esc(r.refundId)}')">📨 Vendor Escalation</button>
+          <button class="btn danger" onclick="window.__demoAction('Refund Rejected', '${esc(r.refundId)}')">⛔ Reject</button>
+        </div>
+      </div>
+    `
+  });
+}
+
+function userDetails(u){
+  openDrawer({
+    title: `User • ${u.userId}`,
+    subtitle: `${u.name} • ${u.mobile}`,
+    bodyHTML: `
+      <div class="block">
+        <div class="kv">
+          <div><div class="k">Name</div><div class="v"><b>${esc(u.name)}</b></div></div>
+          <div><div class="k">User ID</div><div class="v mono">${esc(u.userId)}</div></div>
+          <div><div class="k">Mobile</div><div class="v mono">${esc(u.mobile)}</div></div>
+          <div><div class="k">Status</div><div class="v">${statusPill(u.status)}</div></div>
+          <div><div class="k">Wallet</div><div class="v"><b>${money(u.wallet)}</b></div></div>
+          <div><div class="k">Total Spend</div><div class="v">${money(u.spend)}</div></div>
+          <div><div class="k">Txn Count</div><div class="v">${esc(u.txnCount)}</div></div>
+          <div><div class="k">Last Login</div><div class="v mono">${esc(u.lastLogin)}</div></div>
+          <div><div class="k">Risk</div><div class="v">${u.risk==="None"?`<span class="muted">None</span>`:`<span class="badge b-warn">⚠ ${esc(u.risk)}</span>`}</div></div>
+        </div>
+      </div>
+      <div class="block">
+        <div class="row-actions">
+          <button class="btn" onclick="window.__demoAction('Wallet Adjustment Opened', '${esc(u.userId)}')">➖➕ Wallet Adjust</button>
+          <button class="btn danger" onclick="window.__demoAction('${u.status==='Blocked'?'User Unblocked':'User Blocked'}', '${esc(u.userId)}')">${u.status==='Blocked'?'🔓 Unblock':'⛔ Block'}</button>
+          <button class="btn primary" onclick="window.__demoAction('User Txn History Opened', '${esc(u.userId)}')">📄 Txn History</button>
+        </div>
+      </div>
+    `
+  });
+}
+
+function ledgerDetails(l){
+  openDrawer({
+    title: `Ledger • ${l.id}`,
+    subtitle: `${l.userId} • ${l.mobile}`,
+    bodyHTML: `
+      <div class="block">
+        <div class="kv">
+          <div><div class="k">Ledger ID</div><div class="v mono">${esc(l.id)}</div></div>
+          <div><div class="k">Time</div><div class="v mono">${esc(l.at)}</div></div>
+          <div><div class="k">Type</div><div class="v"><b>${esc(l.type)}</b></div></div>
+          <div><div class="k">Status</div><div class="v">${statusPill(l.status)}</div></div>
+          <div><div class="k">Amount</div><div class="v"><b>${(Number(l.amount)<0?'−':'+')}${money(l.amount)}</b></div></div>
+          <div><div class="k">Opening</div><div class="v">${money(l.opening)}</div></div>
+          <div><div class="k">Closing</div><div class="v">${money(l.closing)}</div></div>
+          <div><div class="k">Reference</div><div class="v mono">${esc(l.ref)}</div></div>
+        </div>
+      </div>
+      <div class="block">
+        <div class="row-actions">
+          <button class="btn primary" onclick="window.__demoAction('Ledger Reconciled', '${esc(l.id)}')">✅ Reconcile</button>
+          <button class="btn" onclick="window.__demoAction('Export Ledger Record', '${esc(l.id)}')">⬇ Export</button>
+        </div>
+      </div>
+    `
+  });
+}
+
+window.__demoAction = (action, ref)=>toast(`${action} • Ref: ${ref}`);
+
+/* ===========================
+   Event Delegation for Actions
+=========================== */
+document.addEventListener("click", (e)=>{
+  const a = e.target.closest("[data-action]");
+  if(!a) return;
+
+  const action = a.dataset.action;
+  const id = a.dataset.id;
+
+  if(action==="viewUtility"){ const tx = DUMMY.utilityTx.find(x=>x.id===id); if(tx) utilityDetails(tx); return; }
+  if(action==="retryUtility"){ toast(`Retry queued (demo) • ${id}`); return; }
+  if(action==="openRefund"){ toast(`Manual refund flow opened (demo) • ${id}`); return; }
+
+  if(action==="viewTravel"){ const b = DUMMY.travel.find(x=>x.id===id); if(b) travelDetails(b); return; }
+  if(action==="syncPNR"){ toast(`PNR sync requested (demo) • ${id}`); return; }
+  if(action==="openRefundTravel"){ toast(`Travel refund initiated (demo) • ${id}`); return; }
+
+  if(action==="viewRefund"){ const r = DUMMY.refunds.find(x=>x.refundId===id); if(r) refundDetails(r); return; }
+  if(action==="approveRefund"){ toast(`Approve refund requested (demo) • ${id}`); return; }
+
+  if(action==="viewUser"){ const u = DUMMY.users.find(x=>x.userId===id); if(u) userDetails(u); return; }
+  if(action==="walletAdjust"){ toast(`Wallet adjustment opened (demo) • ${id}`); return; }
+  if(action==="toggleUser"){ toast(`User status change requested (demo) • ${id}`); return; }
+
+  if(action==="viewLedger"){ const l = DUMMY.ledger.find(x=>x.id===id); if(l) ledgerDetails(l); return; }
+
+  if(action==="toggleMaster"){ toast(`Master toggle requested (demo) • ${a.dataset.kind} • ${id}`); return; }
+  if(action==="editFee"){ toast(`Edit fee rule (demo) • ${id}`); return; }
+  if(action==="setPrimary"){ toast(`Set vendor primary (demo) • ${id}`); return; }
+  if(action==="viewVendor"){ toast(`Vendor details opened (demo) • ${id}`); return; }
+  if(action==="viewAudit"){ toast(`Audit details opened (demo) • ${id}`); return; }
+  if(action==="editRole"){ toast(`Edit role (demo) • ${id}`); return; }
+
+  if(action==="viewEmployee"){
+    const emp = EMP_STORE.list.find(x=>x.empId===id);
+    if(!emp) return;
+    openDrawer({
+      title: `Employee • ${emp.empId}`,
+      subtitle: `${emp.name} • ${emp.role}`,
+      bodyHTML: `
+        <div class="block">
+          <div class="kv">
+            <div><div class="k">Name</div><div class="v"><b>${esc(emp.name)}</b></div></div>
+            <div><div class="k">Role</div><div class="v"><span class="badge b-info">🔐 ${esc(emp.role)}</span></div></div>
+            <div><div class="k">Email</div><div class="v mono">${esc(emp.email)}</div></div>
+            <div><div class="k">Mobile</div><div class="v mono">${esc(emp.mobile)}</div></div>
+            <div><div class="k">Status</div><div class="v">${statusPill(emp.status)}</div></div>
+            <div><div class="k">Created</div><div class="v mono">${esc(emp.createdAt)}</div></div>
+          </div>
+        </div>
+      `
+    });
+    return;
+  }
+
+  if(action==="toggleEmployee"){
+    const emp = EMP_STORE.list.find(x=>x.empId===id);
+    if(!emp) return;
+    emp.status = (emp.status==="Disabled") ? "Active" : "Disabled";
+    render();
+    toast(`Employee ${emp.status==="Disabled" ? "disabled" : "enabled"} (demo): ${emp.empId}`);
+    return;
+  }
+});
+
+/* ===========================
+   Sidebar Navigation
+=========================== */
+$("#nav").addEventListener("click", (e)=>{
+  const btn = e.target.closest("button[data-route]");
+  if(!btn) return;
+  navigate(btn.dataset.route);
+});
+
+/* ===========================
+   Topbar Buttons
+=========================== */
+$("#btnMaintenance").addEventListener("click", ()=>{
+  openDrawer({
+    title: "Maintenance (Demo)",
+    subtitle: "Operational tools & checks",
+    bodyHTML: `
+      <div class="block">
+        <div class="kv">
+          <div><div class="k">System Health</div><div class="v">${statusPill("SUCCESS")}</div></div>
+          <div><div class="k">Last Check</div><div class="v mono">${esc(DUMMY.dt(Date.now()))}</div></div>
+          <div><div class="k">Vendor Latency</div><div class="v">Within SLA (demo)</div></div>
+          <div><div class="k">Auto-Retry</div><div class="v">Enabled</div></div>
+        </div>
+        <div style="margin-top:10px" class="row-actions">
+          <button class="btn" onclick="window.__demoAction('Cache Cleared', 'SYS')">🧹 Clear Cache</button>
+          <button class="btn" onclick="window.__demoAction('Health Check Triggered', 'SYS')">🩺 Run Checks</button>
+          <button class="btn danger" onclick="window.__demoAction('Maintenance Mode Enabled', 'SYS')">🧰 Maintenance Mode</button>
+        </div>
+      </div>
+    `
+  });
+});
+
+$("#btnCreateOffer").addEventListener("click", ()=>{
+  openDrawer({
+    title: "Create Offer (Demo)",
+    subtitle: "Marketing / incentives template",
+    bodyHTML: `
+      <div class="block">
+        <div class="kv">
+          <div><div class="k">Offer Name</div><div class="v">New User Cashback</div></div>
+          <div><div class="k">Scope</div><div class="v">Mobile + DTH</div></div>
+          <div><div class="k">Value</div><div class="v">₹10 cashback on min ₹199</div></div>
+          <div><div class="k">Validity</div><div class="v">7 days</div></div>
+        </div>
+        <div style="margin-top:10px" class="mini muted">
+          In production: offer engine, eligibility rules, abuse prevention, and audit logs.
+        </div>
+        <div style="margin-top:10px" class="row-actions">
+          <button class="btn primary" onclick="window.__demoAction('Offer Created', 'OFFER')">✨ Create</button>
+          <button class="btn" onclick="window.__demoAction('Offer Saved as Draft', 'OFFER')">💾 Save Draft</button>
+        </div>
+      </div>
+    `
+  });
+});
+
+$("#btnManualRefund").addEventListener("click", ()=>{
+  toast("Manual Refund clicked. In production: verify debit, lock record, maker-checker approval, and ledger posting.");
+});
+
+/* ===========================
+   Global Search
+=========================== */
+$("#globalSearch").addEventListener("keydown", (e)=>{
+  if(e.key !== "Enter") return;
+  const q = (e.target.value||"").trim();
+  if(!q) return;
+
+  const tx = DUMMY.utilityTx.find(x=>x.id===q || x.vendorRef===q || x.userMobile===q);
+  if(tx){ utilityDetails(tx); return; }
+
+  const b = DUMMY.travel.find(x=>x.id===q || x.pnr===q || x.userMobile===q);
+  if(b){ travelDetails(b); return; }
+
+  const r = DUMMY.refunds.find(x=>x.refundId===q || x.refId===q || x.vendorRef===q || x.user===q);
+  if(r){ refundDetails(r); return; }
+
+  state.filters.utility.q = q;
+  navigate("utilityTx");
+});
+
+/* ===========================
+   Boot
+=========================== */
+navigate("dashboard");
+</script>
+</body>
+</html>
